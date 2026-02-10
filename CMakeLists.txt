@@ -17,7 +17,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(fmt)
 
 # 4. Your existing prject setup
-add_executable(calc_app src/main.cpp src/math_utils.cpp)
+add_executable(calc_app src/main.cpp src/math_utils.cpp src/physics_engine.cpp)
 target_include_directories(calc_app PRIVATE include)
 
 # 5. Link the library to your executable
