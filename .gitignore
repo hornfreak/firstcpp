@@ -1,0 +1,10 @@
+# Ignore the build artifiacts & downlaod dependencies
+build/
+
+# Ignore the clangd index cache
+.cache/
+
+# Optional: Ignore Neovim Swap, backup, and undo files
+*.swp
+*.swo
+undo/
