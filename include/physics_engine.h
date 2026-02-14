@@ -9,6 +9,7 @@ public:
 
     double getPosition() const;
     double getVelocity() const;
+    void handleCollision(double elasticity);
     
 private:
     double position;

@@ -10,5 +10,12 @@ void Particle::update(double deltaTime) {
     position += velocity * deltaTime;
 }
 
+void Particle::handleCollision(double elasticity) {
+    if(position <= 0) {
+        position = 0;               // Snap to ground to prevent "tunneling"
+        velocity *= -elasticity;    // Reverse & dampen velocity
+    }
+}
+
 double Particle::getPosition() const { return position;}
 double Particle::getVelocity() const { return velocity;}
