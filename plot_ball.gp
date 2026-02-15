@@ -1,0 +1,7 @@
+set datafile separator ","
+set title "3D Ball Trajectory"
+set xlabel "X Position"
+set ylabel "Z Position"
+set zlabel "Height (Y)"
+splot "simulation_data.csv" using 3:5:4 with lines title "Flight Path"
+pause -1 "Press any key to exit"
