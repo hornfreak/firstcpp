@@ -1,11 +1,14 @@
 #include "physics_engine.h"
+#include "user.h"
 #include <chrono>
+#include <cstdio>
 #include <fmt/core.h>
 #include <fstream>
 #include <thread>
 
 int main() {
   Particle ball({0.0, 100.0, 0.0}, {2.0, 0.0, 5.0}, -9.81);
+  User hmd({0, 1.65, 0}); // user standing at origion at my height (in meters)
 
   std::ofstream outFile("../simulation_data.csv");
   if (outFile.is_open()) {
@@ -42,7 +45,6 @@ int main() {
       ball.update(dt, wind);
       ball.handleCollision(0.8);
 
-      accumulator -= dt;
       totalSimTime += dt;
       stepCount++;
 
@@ -52,12 +54,24 @@ int main() {
         outFile << fmt::format("{},{:.4f},{:.4f},{:.4f},{:.4f}\n", stepCount,
                                totalSimTime, p.x, p.y, p.z);
       }
+      accumulator -= dt;
     }
+
+    Vector3 lookVec = hmd.calculateLookAtTarget(ball.getPosition());
+    EularAngles angles = hmd.getAnglesToTarget(ball.getPosition());
 
     // Print to the console less frequently so it doesn't log the Mac
     if (stepCount % 10 == 0) {
-      fmt::print("Time: {:.2f}s | Pos Y: {:.2f}m\n", totalSimTime,
-                 ball.getPosition().y);
+      bool visible = hmd.isVisible(ball.getPosition(), 90.0);
+      EularAngles toBall = hmd.getAnglesToTarget(ball.getPosition());
+
+      fmt::print("User needs to look: Yaw {:.1f}°, Pitch {:.1f}° to see ball\n",
+                 angles.yaw, angles.pitch);
+      // Clear the line & print a HUD
+      fmt::print(
+          "\r[HUD] Visible: {:<5} | To Ball: Yaw {:>6.1f}°, Pitch: {:>6.1f}°",
+          visible ? "YES" : "NO", toBall.yaw, toBall.pitch);
+      std::fflush(stdout); // Forces the console to overwrite the same line
     }
 
     // Slow down the "Visual" loop to let the CPU breathe
