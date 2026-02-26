@@ -1,11 +1,17 @@
 #pragma once
 
+#include <cmath>
 struct Vector3 {
   double x, y, z;
 
   // Operator overloading: Allows "vecA + vecB"
   Vector3 operator+(const Vector3 &other) const {
     return {x + other.x, y + other.y, z + other.z};
+  }
+
+  // Subtraction operator for realitve position maths
+  Vector3 operator-(const Vector3 &other) const {
+    return {x - other.x, y - other.y, z - other.z};
   }
 
   // Allows "vec * scalar" (Scaling a vector)
@@ -16,6 +22,29 @@ struct Vector3 {
   // Compound assignment: "vecA += vecB"
   Vector3 operator+=(const Vector3 &other) {
     return {x += other.x, y += other.y, z += other.z};
+  }
+
+  // Dot product: Measures how much two vectors point in the same direction
+  double dot(const Vector3 &other) const {
+    return (x * other.x) + (y * other.y) + (z * other.z);
+  }
+
+  // Length (Magnitude): The distance of the vector
+  double length() const { return std::sqrt(x * x + y * y + z * z); }
+
+  // Normalization: Returns a unit vector (length of 1.0)
+  Vector3 normalized() const {
+    double l = length();
+    if (l > 0.0001) {
+      return {x / l, y / l, z / l};
+    }
+    return {0, 0, 0};
+  }
+
+  // Cross Product: finding 3rd axis for something
+  Vector3 cross(const Vector3 &other) const {
+    return {(y * other.z) - (z * other.y), (z * other.x) - (x * other.z),
+            (x * other.y) - (y * other.x)};
   }
 };
 

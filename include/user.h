@@ -31,8 +31,8 @@ public:
   }
 
   EularAngles getAnglesToTarget(Vector3 target) const {
-    Vector3 diff = {target.x - this->position.x, target.y - this->position.y,
-                    target.z - this->position.z};
+    // determine look at which is just VecA - VecB
+    Vector3 diff = target - position;
 
     // Yaw: atan2 handles X & Z plane
     double yaw = std::atan2(diff.x, diff.z) * (180.0 / M_PI);
@@ -46,20 +46,17 @@ public:
 
   bool isVisible(Vector3 target, double fovDegrees) const {
     // 1. Get the direction vector to the target
-    Vector3 toTarget = calculateLookAtTarget(target);
+    Vector3 toTarget = (target - position).normalized();
 
-    // 2. Dot Product: (dirA.x * dirB.x) + (dirA.y * dirB.y) + (dirA.z * dirB.z)
-    // lookDirection should be normalized (e.g. {0,0,-1} for forward)
-    double dot = (lookDireciton.x * toTarget.x) +
-                 (lookDireciton.y * toTarget.y) +
-                 (lookDireciton.z * toTarget.z);
+    // 2. Use the dot product method
+    double dotproduct = lookDireciton.dot(toTarget);
 
     // 3. Convert FOV to a threshold
     // A 90 degree FOV menas 45 degrees to the left & 45 to the right
     double threshold = std::cos((fovDegrees / 2.0) * (M_PI / 180.0));
 
     // If the dot product is greater than the threshold, it is in the Conve
-    return dot >= threshold;
+    return dotproduct >= threshold;
   }
 
   void updateLookDirection(double yawDegrees, double pitchDegrees) {
@@ -75,6 +72,34 @@ public:
 
     // The lookDirection is now a unit vector pointing exactly where the user is
     // looking
+  }
+
+  Vector3 getLocalPosition(Vector3 targetWorldPos) {
+    // 1. Translate: Find the world-space offset
+    Vector3 relative = {targetWorldPos.x - position.x,
+                        targetWorldPos.y - position.y,
+                        targetWorldPos.z - position.z};
+
+    // 2. Rotate: This is simplied 2D rotation (Yaw only)
+    // to align the world to the user's horizontal heading.
+    double angle = std::atan2(lookDireciton.x, lookDireciton.z);
+    double s = std::sin(-angle);
+    double c = std::cos(-angle);
+
+    Vector3 local;
+    local.x = relative.x * c - relative.z * s;
+    local.z = relative.x * s + relative.z * c;
+    local.y = relative.y; // Height remains the same for simple yaw
+
+    return local;
+  }
+
+  Vector3 getRightVector() const {
+    Vector3 worldUp = {0.0, 1.0, 0.0};
+
+    // Cross Product: Forward x WorldUp = Right
+    // This returns a vector pointing 90 degrees to the user's right
+    return lookDireciton.cross(worldUp).normalized();
   }
 
 private:
